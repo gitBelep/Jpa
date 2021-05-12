@@ -2,7 +2,6 @@ package tracker;
 
 import org.junit.Before;
 import org.junit.Test;
-
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.time.LocalDate;
@@ -13,11 +12,13 @@ import static org.junit.Assert.*;
 
 public class ActivityDaoTest {
     private ActivityDao dao;
+    private TrackPointDao tpDao;
 
     @Before
     public void setUp() throws Exception {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("puA");
         dao = new ActivityDao(emf);
+        tpDao = new TrackPointDao(emf);
 
         Activity a1 = new Activity(LocalDateTime.of(1991,1,1,10,1,0), "fut", Type.RUNNING);
         Activity a2 = new Activity(LocalDateTime.of(2001,2,2,10,1,0), "kosár", Type.BASKETBALL);
@@ -26,24 +27,6 @@ public class ActivityDaoTest {
         a2.setLabels(new ArrayList<>(List.of("initial notation")));
         List<Activity> existingActivities = new ArrayList<>(List.of(a1, a2, a3, a4));
         dao.saveActivities(existingActivities);
-
-        //hibernate will do everything
-//        MariaDbDataSource ds;
-//        try {
-//            ds = new MariaDbDataSource();
-//            ds.setUrl("jdbc:mariadb://localhost:3306/activitytracker?useUnicode=true");
-//            ds.setUser("activitytracker");
-//            ds.setPassword("activitytracker");
-//        } catch (SQLException sq) {
-//            throw new IllegalStateException("Cannot connect", sq);
-//        }
-//
-//        Flyway flyway = Flyway.configure()
-//                .locations("/db/migration/Active")
-//                .dataSource(ds)
-//                .load();
-//        flyway.clean();
-//        flyway.migrate();
     }
 
     @Test
@@ -83,12 +66,72 @@ public class ActivityDaoTest {
 
         System.out.println("labels: "+ activity1.getLabels().toString());
         System.out.println("label: "+ activity2.getLabels().toString());
-//
-//        assertEquals("z árvíztűrő :-) fiúkkal KOSÁR", activityWithId2.getDesc().substring(1));
-//        assertEquals(LocalDate.now(), activityWithId2.getCreatedAt().toLocalDate());
 
+        assertEquals( List.of("Szélben", "Hóban"), activity1.getLabels());
+        assertEquals( List.of("initial notation", "Tűző napon"), activity2.getLabels());
+    }
 
+    @Test
+    public void testTrackingPoint() {
+        TrackPoint tp1 = new TrackPoint(LocalDateTime.of(2019, 12, 12, 12, 12, 12), 7.123, 8.456);
+        TrackPoint tp2 = new TrackPoint(LocalDateTime.of(2019, 12, 12, 12, 50, 12), 7.2, 8.5);
+        TrackPoint tp3 = new TrackPoint(LocalDateTime.of(2019, 12, 12, 13, 55, 12), 7.3, 8.6);
+        TrackPoint tp4 = new TrackPoint(LocalDateTime.of(2019, 11, 12, 14, 12, 12), 7.123, 8.456);
+        TrackPoint tp5 = new TrackPoint(LocalDateTime.of(2019, 12, 12, 12, 50, 12), 7.2, 8.5);
+        TrackPoint tp6 = new TrackPoint(LocalDateTime.of(2019, 12, 11, 12, 50, 12), 7.3, 8.6);
 
+        Activity a5pre = new Activity(LocalDateTime.of(2019, 12, 12, 11, 59, 0), "TÚRA", Type.HIKING);
+        a5pre.setLabels(new ArrayList<>(List.of("meredek")));
+
+        dao.saveActivities(List.of(a5pre));
+        Activity a5 = dao.findActivityById(5L);
+
+        dao.addTrackPoint(tp3, a5.getId());
+        dao.addTrackPoint(tp2, a5.getId());
+        dao.addTrackPoint(tp6, 4);
+        dao.addTrackPoint(tp4, 4);
+        dao.addTrackPoint(tp5, 4);
+        dao.addTrackPoint(tp1, a5.getId());
+
+        Activity a5WithTp = dao.findActivityByIdWithTrackPoints(a5.getId());
+        System.out.println(">>>> Tp time1: " + a5WithTp.getTrackPoints().get(0).getTime());
+        System.out.println(">>>> Tp time2: " + a5WithTp.getTrackPoints().get(1).getTime());
+        assertEquals(LocalDateTime.of(2019, 12, 12, 13, 55, 12),
+                a5WithTp.getTrackPoints().get(2).getTime());
+        assertEquals(3, a5WithTp.getTrackPoints().size());
+
+        Activity a4WithTp = dao.findActivityByIdWithTrackPoints(4);
+        System.out.println(">>>> Tp time1: " + a4WithTp.getTrackPoints().get(0).getTime());
+        System.out.println(">>>> Tp time2: " + a4WithTp.getTrackPoints().get(1).getTime());
+        System.out.println(">>>> Tp time3: " + a4WithTp.getTrackPoints().get(2).getTime());
+        assertEquals(LocalDateTime.of(2019, 11, 12, 14, 12, 12),
+                a4WithTp.getTrackPoints().get(0).getTime());
+        assertEquals(3, a4WithTp.getTrackPoints().size());
+    }
+
+    @Test
+    public void testTrackingSearchPointWithLatOrLong(){
+        TrackPoint tp1 = new TrackPoint(LocalDateTime.of(2019,12,12,12,12,12), 7.123, 8.456);
+        TrackPoint tp2 = new TrackPoint(LocalDateTime.of(2019,12,12,12,50,12), 7.2, 8.5);
+        TrackPoint tp3 = new TrackPoint(LocalDateTime.of(2019,12,12,13,55,12), 7.3, 8.6);
+        TrackPoint tp4 = new TrackPoint(LocalDateTime.of(2019,11,12,14,12,12), 7.123, 8.456);
+        TrackPoint tp5 = new TrackPoint(LocalDateTime.of(2019,12,12,12,50,12), 7.2, 8.5);
+        TrackPoint tp6 = new TrackPoint(LocalDateTime.of(2019,12,11,12,50,12), 7.3, 8.6);
+
+        dao.addTrackPoint(tp3, 3);
+        dao.addTrackPoint(tp2, 3);
+        dao.addTrackPoint(tp6, 4);
+        dao.addTrackPoint(tp4, 4);
+        dao.addTrackPoint(tp5, 4);
+        dao.addTrackPoint(tp1, 3);
+
+        List<TrackPoint> tpLat = tpDao.findTrackPointWithLatOrLong(7.2, 77);
+        System.out.println(">>>> 0: "+ tpLat.get(0).getTime());
+        assertEquals(2, tpLat.size());
+
+        List<TrackPoint> tpLon = tpDao.findTrackPointWithLatOrLong(77, 8.6);
+        System.out.println("\">>>> "+ tpLon.size() +" db,0: "+ tpLon.get(0).getTime());
+        assertEquals(2, tpLon.size());
     }
 
 }

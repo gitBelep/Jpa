@@ -36,6 +36,11 @@ public class Activity {
     @Column(name="label")
     private List<String> labels;
 
+    //csak visszatöltés után lekérdezhető
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, mappedBy = "trActivity")
+    @OrderBy("time")
+    private List<TrackPoint> trackPoints;
+
 
     public Activity() {
     }
@@ -46,6 +51,22 @@ public class Activity {
         this.type = type;
     }
 
+
+//    public void addTrackPoints(TrackPoint tp){
+//        if (trackPoints == null){
+//            trackPoints = new ArrayList<>();
+//        }
+//        trackPoints.add(tp);
+//        tp.setTrActivity( this );
+//    }
+
+    public List<TrackPoint> getTrackPoints() {
+        return new ArrayList<>( trackPoints );
+    }
+
+    public void setTrackPoints(List<TrackPoint> trackPoints) {
+        this.trackPoints = trackPoints;
+    }
 
     public List<String> getLabels() {
         return new ArrayList<>( labels );
