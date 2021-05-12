@@ -134,4 +134,11 @@ public class ActivityDaoTest {
         assertEquals(2, tpLon.size());
     }
 
+    @Test
+    public void testDelete(){
+        dao.deleteActivity(3);
+        Activity nonExistingActivity = dao.findActivityById(3);
+        assertEquals(null, nonExistingActivity);
+    }
+
 }

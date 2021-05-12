@@ -97,5 +97,13 @@ public class ActivityDao {
         return a;
     }
 
+    public void deleteActivity(long id){
+        EntityManager em = emf.createEntityManager();
+        em.getTransaction().begin();
+        Activity actual = em.find(Activity.class, id);
+        em.remove( actual );
+        em.getTransaction().commit();
+        em.close();
+    }
 
 }
