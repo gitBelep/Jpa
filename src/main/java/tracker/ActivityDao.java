@@ -106,4 +106,26 @@ public class ActivityDao {
         em.close();
     }
 
+//    public List<Activity> findActivitiesInCertainArea(String areaName){
+//        EntityManager em = emf.createEntityManager();
+//        em.getTransaction().begin();
+//        List<Activity> result = em.createQuery(
+//                "select ac from Activity ac join fetch ac.areas where ac.areas.get(0).getName() = :areaName", Activity.class)
+//                .setParameter("areaName", areaName)
+//                .getResultList();
+//        em.close();
+//        return result;
+//    }
+
+    public Activity findActivityByIdWithArea(long id){
+        EntityManager em = emf.createEntityManager();
+        Activity actual = em.createQuery(
+                "select a from Activity a join fetch a.areas where a.id = :id", Activity.class)
+                .setParameter("id", id)
+                .getSingleResult();
+        em.close();
+        return actual;
+    }
+
+
 }

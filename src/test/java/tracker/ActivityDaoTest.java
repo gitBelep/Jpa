@@ -8,17 +8,21 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 public class ActivityDaoTest {
     private ActivityDao dao;
     private TrackPointDao tpDao;
+    private AreaDao areaDao;
 
     @Before
     public void setUp() throws Exception {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("puA");
         dao = new ActivityDao(emf);
         tpDao = new TrackPointDao(emf);
+        areaDao = new AreaDao(emf);
 
         Activity a1 = new Activity(LocalDateTime.of(1991,1,1,10,1,0), "fut", Type.RUNNING);
         Activity a2 = new Activity(LocalDateTime.of(2001,2,2,10,1,0), "kosár", Type.BASKETBALL);
@@ -135,10 +139,30 @@ public class ActivityDaoTest {
     }
 
     @Test
-    public void testDelete(){
-        dao.deleteActivity(3);
-        Activity nonExistingActivity = dao.findActivityById(3);
+    public void testActivitiesWithAreaThenCascadeDelete(){
+        TrackPoint tp = new TrackPoint(LocalDateTime.of(2019,12,12,12,12,44), 7.123, 8.456);
+        dao.addTrackPoint(tp, 2);
+        Activity act2WithTr = dao.findActivityByIdWithTrackPoints(2);
+        //System.out.println(">>> time: "+ act2WithTr.getTrackPoints().get(0).getTime());
+        assertEquals(44, act2WithTr.getTrackPoints().get(0).getTime().getSecond());
+
+        Activity act1 = dao.findActivityById(1);
+
+        Set<Activity> activities = Set.of(act2WithTr, act1);
+        Area r1 = new Area("Rax-Alpen", activities);
+        areaDao.saveArea(r1);
+        Activity acti2WithArea = dao.findActivityByIdWithArea(2);
+        Activity acti1WithArea = dao.findActivityByIdWithArea(1);
+
+        assertEquals(1, acti2WithArea.getAreas().size());
+
+        dao.deleteActivity(2);
+        Activity nonExistingActivity = dao.findActivityById(2);
         assertEquals(null, nonExistingActivity);
+
+        //acti1WithArea has the Area (OK), but Area disappeared from DB (not OK)
+        assertEquals(1, acti1WithArea.getAreas().size());
     }
+
 
 }

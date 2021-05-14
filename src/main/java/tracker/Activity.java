@@ -3,7 +3,9 @@ package tracker;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "activ")
@@ -36,10 +38,15 @@ public class Activity {
     @Column(name="label")
     private List<String> labels;
 
-    //csak visszatöltés után lekérdezhető
+    //csak visszatöltés után lekérdezhető!
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, mappedBy = "trActivity")
     @OrderBy("time")
-    private List<TrackPoint> trackPoints;
+    private List<TrackPoint> trackPoints = new ArrayList<>();
+
+    //Not OK: CascadeType.REMOVE ?? Removes the whole Area, from other Activities too
+    @ManyToMany(mappedBy = "activities", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OrderBy("name")
+    private Set<Area> areas = new HashSet<>();
 
 
     public Activity() {
@@ -52,13 +59,13 @@ public class Activity {
     }
 
 
-//    public void addTrackPoints(TrackPoint tp){
-//        if (trackPoints == null){
-//            trackPoints = new ArrayList<>();
-//        }
-//        trackPoints.add(tp);
-//        tp.setTrActivity( this );
-//    }
+    public Set<Area> getAreas() {
+        return areas;
+    }
+
+    public void setAreas(Set<Area> areas) {
+        this.areas = areas;
+    }
 
     public List<TrackPoint> getTrackPoints() {
         return new ArrayList<>( trackPoints );
