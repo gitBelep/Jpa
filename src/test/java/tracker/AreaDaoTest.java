@@ -5,9 +5,8 @@ import org.junit.Test;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import static org.junit.Assert.*;
 
 public class AreaDaoTest {
@@ -48,4 +47,23 @@ public class AreaDaoTest {
         assertEquals(2, az.size() );
     }
 
+    @Test
+    public void testAddCity(){
+        City c1 = new City("Bp", 2000_000);
+        City c2 = new City("Aba", 5000);
+
+        aDao.saveCityToArea(c1, "Rax");
+        aDao.saveCityToArea(c2, "Rax");
+        aDao.saveCityToArea(new City("Dömi", 21_000), "Rám");
+
+        Area a2 = aDao.findAreaWithCity("Rax");
+        Area a3 = aDao.findAreaWithCity("Rám");
+//        for(Map.Entry<String, City> e : a2.getCities().entrySet()){
+//            System.out.println(">>>"+ e.getValue().getCityId() +": "+ e.getValue().getCityName() +" "+ e.getValue().getPopulation());
+//        }
+
+        assertTrue(a2.getCities().containsKey("Bp"));
+        assertFalse(a3.getCities().containsKey("Bp"));
+        assertTrue(a3.getCities().containsKey("Dömi"));
+    }
 }

@@ -1,8 +1,7 @@
 package tracker;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "areas")
@@ -14,8 +13,12 @@ public class Area {
 
     private String name;
 
-    @ManyToMany  //(mappedBy = "areas")
+    @ManyToMany  //(mappedBy = "areas") //ne
     private Set<Activity> activities = new HashSet<>();
+
+    @OneToMany(mappedBy = "areaC", cascade = {CascadeType.ALL})
+    @MapKey(name = "cityName")
+    private Map<String, City> cities = new HashMap<>();
 
 
     public Area() {
@@ -32,6 +35,18 @@ public class Area {
         a.getAreas().add(this);
     }
 
+    public void addCity(City c) {
+        cities.put(c.getCityName(), c);
+        c.setAreaC(this);
+    }
+
+    public Map<String, City> getCities() {
+        return cities;
+    }
+
+    public void setCities(Map<String, City> cities) {
+        this.cities = cities;
+    }
 
     public long getAreaId() {
         return areaId;

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -161,7 +162,13 @@ public class ActivityDaoTest {
         assertEquals(null, nonExistingActivity);
 
         //acti1WithArea has the Area (OK), but Area disappeared from DB (not OK)
-        assertEquals(1, acti1WithArea.getAreas().size());
+        Set<Area> areas = acti1WithArea.getAreas();
+        assertEquals(1, areas.size());
+
+        List<String> areaNames = areas.stream()
+                .map(Area::getName)
+                .collect(Collectors.toList());
+        assertEquals(List.of("Rax-Alpen"), areaNames);
     }
 
 

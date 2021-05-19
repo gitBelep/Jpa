@@ -39,7 +39,7 @@ public class Activity {
     private List<String> labels;
 
     //csak visszatöltés után lekérdezhető!
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, mappedBy = "trActivity")
+    @OneToMany(mappedBy = "trActivity", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     @OrderBy("time")
     private List<TrackPoint> trackPoints = new ArrayList<>();
 
