@@ -30,6 +30,14 @@ public class ActivityDao {
         return resultActivity;
     }
 
+    public void updateActivity(Activity a) {
+            EntityManager em = emf.createEntityManager();
+            em.getTransaction().begin();
+            em.merge( a ); // Visszatérési értéke a merged entitás
+            em.getTransaction().commit();
+            em.close();
+        }
+
     public List<Activity> listActivities() {
         EntityManager em = emf.createEntityManager();
         List<Activity> allActivities = em.createQuery(
@@ -44,7 +52,7 @@ public class ActivityDao {
         em.getTransaction().begin();
 //Nem hívhatom meg a fentebbi findActivityById-t ! Akkor nem menti a változtatást.
         Activity activityToUpdate = em.find(Activity.class, id);
-        activityToUpdate.setDesc(desc);
+        activityToUpdate.setDescr(desc);
         activityToUpdate.setUpdatedAt(LocalDateTime.now());
         em.getTransaction().commit();
         em.close();
@@ -53,21 +61,20 @@ public class ActivityDao {
     public void addLabel(String labelToAdd, long id) {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
-        Activity actual = em.getReference(Activity.class, id);
+        Activity actual = em.find(Activity.class, id);  //getReference helyett?
         List<String> updatedLabels = actual.getLabels();   //returns only a copy
         updatedLabels.add(labelToAdd);
         actual.setLabels(updatedLabels);
         actual.setUpdatedAt(LocalDateTime.now());
-        em.persist(actual);
+        em.merge(actual);
         em.getTransaction().commit();
         em.close();
     }
 
-    public Activity findActivityByIdWithLabels(long id) {
+    public Activity findActivityByIdWithLabels(Long id) {
         EntityManager em = emf.createEntityManager();
-        em.getTransaction().begin();
         Activity actual = em.createQuery(
-                "select a from Activity a join fetch a.labels where id = :myId", Activity.class)
+                "select a from Activity a join fetch a.labels where a.id = :myId", Activity.class)
                 .setParameter("myId", id)
                 .getSingleResult();
         em.close();

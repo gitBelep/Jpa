@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import static org.junit.Assert.*;
 
 public class ActivityDaoTest {
@@ -49,28 +48,25 @@ public class ActivityDaoTest {
     }
 
     @Test
-    public  void testUpdate(){
+    public  void testUpdateDescr(){
         dao.updateActivityDescription(2L, "Az árvíztűrő :-) fiúkkal KOSÁR");
         Activity activityWithId2 = dao.findActivityById(2);
 
         System.out.println("created: "+ activityWithId2.getCreatedAt());
         System.out.println("updated: "+ activityWithId2.getUpdatedAt());
-        System.out.println(activityWithId2.getDesc());
+        System.out.println(activityWithId2.getDescr());
 
-        assertEquals("z árvíztűrő :-) fiúkkal KOSÁR", activityWithId2.getDesc().substring(1));
+        assertEquals("z árvíztűrő :-) fiúkkal KOSÁR", activityWithId2.getDescr().substring(1));
         assertEquals(LocalDate.now(), activityWithId2.getCreatedAt().toLocalDate());
        }
 
     @Test
     public void testLabels(){
-        dao.addLabel("Szélben", 1);
-        dao.addLabel("Tűző napon", 2);
-        dao.addLabel("Hóban", 1);
-        Activity activity1 = dao.findActivityByIdWithLabels(1);
-        Activity activity2 = dao.findActivityByIdWithLabels(2);
-
-        System.out.println("labels: "+ activity1.getLabels().toString());
-        System.out.println("label: "+ activity2.getLabels().toString());
+        dao.addLabel("Szélben", 1L);
+        dao.addLabel("Tűző napon", 2L);
+        dao.addLabel("Hóban", 1L);
+        Activity activity1 = dao.findActivityByIdWithLabels(1L);
+        Activity activity2 = dao.findActivityByIdWithLabels(2L);
 
         assertEquals( List.of("Szélben", "Hóban"), activity1.getLabels());
         assertEquals( List.of("initial notation", "Tűző napon"), activity2.getLabels());
@@ -115,7 +111,7 @@ public class ActivityDaoTest {
     }
 
     @Test
-    public void testTrackingSearchPointWithLatOrLong(){
+    public void testSearchTrackingPointWithLatOrLong(){
         TrackPoint tp1 = new TrackPoint(LocalDateTime.of(2019,12,12,12,12,12), 7.123, 8.456);
         TrackPoint tp2 = new TrackPoint(LocalDateTime.of(2019,12,12,12,50,12), 7.2, 8.5);
         TrackPoint tp3 = new TrackPoint(LocalDateTime.of(2019,12,12,13,55,12), 7.3, 8.6);
@@ -171,5 +167,28 @@ public class ActivityDaoTest {
         assertEquals(List.of("Rax-Alpen"), areaNames);
     }
 
+    @Test
+    public void testNewAndExistingActivityWithDetails(){
+        Activity a5 = new Activity(LocalDateTime.of(2021,5,5,5,5,0), "55", Type.HIKING);
+        a5.setDistance(42.42);
+        a5.setDuration(7*60*60);
+        dao.saveActivities(List.of(a5));
+
+        Activity a2 = dao.findActivityById(2L);
+        a2.setDuration(3600);
+        dao.updateActivity(a2);      //ezt nem save!
+
+        Activity test5Activity = dao.findActivityById( a5.getId() );
+        Activity test2Activity = dao.findActivityById(2L);
+        Activity test222Activity = dao.findActivityByIdWithLabels(2L);
+
+        assertEquals(42.42, test5Activity.getDistance(), 0.01);
+        assertEquals( 420*60, test5Activity.getDuration());
+
+        assertEquals(3600L, test2Activity.getDuration());
+
+        assertEquals(3600L, test222Activity.getDuration());
+        assertEquals("initial notation", test222Activity.getLabels().get(0).toString());
+    }
 
 }

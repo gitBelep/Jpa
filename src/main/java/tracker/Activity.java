@@ -9,6 +9,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "activ")
+@SecondaryTable(name = "act_details", pkJoinColumns = @PrimaryKeyJoinColumn(name="id"))
 public class Activity {
 
     @Id
@@ -48,6 +49,12 @@ public class Activity {
     @OrderBy("name")
     private Set<Area> areas = new HashSet<>();
 
+    @Column(table = "act_details")
+    private double distance;
+
+    @Column(table = "act_details")
+    private long duration;
+
 
     public Activity() {
     }
@@ -58,6 +65,22 @@ public class Activity {
         this.type = type;
     }
 
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
 
     public Set<Area> getAreas() {
         return areas;
@@ -83,20 +106,28 @@ public class Activity {
         this.labels = labels;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(String descr) {
+        this.descr = descr;
     }
 
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
-    public String getDesc() {
-        return descr;
-    }
-
-    public Type getType() {
-        return type;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -115,16 +146,8 @@ public class Activity {
         this.updatedAt = updatedAt;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public void setDesc(String desc) {
-        this.descr = desc;
+    public Type getType() {
+        return type;
     }
 
     public void setType(Type type) {

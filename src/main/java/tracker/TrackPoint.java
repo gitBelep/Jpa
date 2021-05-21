@@ -66,7 +66,7 @@ public class TrackPoint {
     }
 
     public Activity getTrActivity() {
-        return new Activity(trActivity.getStartTime(), trActivity.getDesc(), trActivity.getType());
+        return new Activity(trActivity.getStartTime(), trActivity.getDescr(), trActivity.getType());
     }
 
     public void setTrActivity(Activity trActivity) {
