@@ -22,9 +22,9 @@ public class AreaDao {
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
         Area a = findAreaByName(name);
-       // a.getCities().put(c.getCityName(), c);
+        //a.getCities().put(c.getCityName(), c);
+        //em.persist(a);  -> update .merge(a); ??
         c.setAreaC(a);
-        //em.persist(a);
         em.persist(c);
         em.getTransaction().commit();
         em.close();
@@ -40,17 +40,6 @@ public class AreaDao {
         return actual;
     }
 
-//    public void addCity(Area area, City city){
-//        EntityManager em = emf.createEntityManager();
-//        em.getTransaction().begin();
-//        area.getCities().put(city.getCityName(), city);
-//        area.addCity(city);    //kölcsönös beállítás
-//        em.persist(area);
-//        em.persist(city);
-//        em.getTransaction().commit();
-//        em.close();
-//    }
-
     public Area findAreaWithCity(String areaName){
         EntityManager em = emf.createEntityManager();
         Area result = em.createQuery(
@@ -60,4 +49,23 @@ public class AreaDao {
         em.close();
         return result;
     }
+
+    public City findCity(Integer id){           //contains Area!
+        // in A: @OneToMany(mappedBy = "areaC", cascade = {CascadeType.ALL})
+        EntityManager em = emf.createEntityManager();
+        City result = em.find(City.class, id);
+        em.close();
+        return result;
+    }
+
+    public City findCityByName(String name){     //contains Area
+        EntityManager em = emf.createEntityManager();
+        City result = em.createQuery(
+                "select c from City c where c.cityName = :n", City.class)
+                .setParameter("n", name)
+                .getSingleResult();
+        em.close();
+        return result;
+    }
+
 }

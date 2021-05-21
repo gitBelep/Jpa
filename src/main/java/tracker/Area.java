@@ -13,7 +13,7 @@ public class Area {
 
     private String name;
 
-    @ManyToMany  //(mappedBy = "areas") //ne
+    @ManyToMany
     private Set<Activity> activities = new HashSet<>();
 
     @OneToMany(mappedBy = "areaC", cascade = {CascadeType.ALL})

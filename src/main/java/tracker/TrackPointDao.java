@@ -11,15 +11,6 @@ public class TrackPointDao {
         this.emf = emf;
     }
 
-    //No reason for this code
-//    public void saveTrackPoint(TrackPoint tp){
-//        EntityManager em = emf.createEntityManager();
-//        em.getTransaction().begin();
-//        em.persist(tp);
-//        em.getTransaction().commit();
-//        em.close();
-//    }
-
     public List<TrackPoint> findTrackPointWithLatOrLong(double latitude, double longitude){
         EntityManager em = emf.createEntityManager();
         em.getTransaction().begin();
